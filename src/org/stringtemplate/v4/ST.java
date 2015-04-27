@@ -410,35 +410,23 @@ public class ST {
 
 	public boolean isAnonSubtemplate() { return impl.isAnonSubtemplate; }
 
-	public int write(STWriter out) throws IOException {
-		Interpreter interp = new Interpreter(groupThatCreatedThisInstance,
-											 impl.nativeGroup.errMgr,
-											 false);
-		InstanceScope scope = new InstanceScope(null, this);
-		return interp.exec(out, scope);
+    public int write(STWriter out) {
+        return write(out, null, null);
     }
 
 	public int write(STWriter out, Locale locale) {
-		Interpreter interp = new Interpreter(groupThatCreatedThisInstance,
-											 locale,
-											 impl.nativeGroup.errMgr,
-											 false);
-		InstanceScope scope = new InstanceScope(null, this);
-		return interp.exec(out, scope);
+        return write(out, locale, null);
 	}
 
 	public int write(STWriter out, STErrorListener listener) {
-		Interpreter interp = new Interpreter(groupThatCreatedThisInstance,
-											 new ErrorManager(listener),
-											 false);
-		InstanceScope scope = new InstanceScope(null, this);
-		return interp.exec(out, scope);
+        return write(out, null, listener);
 	}
 
 	public int write(STWriter out, Locale locale, STErrorListener listener) {
+        ErrorManager errMgr = (listener != null) ? new ErrorManager(listener) : impl.nativeGroup.errMgr;
 		Interpreter interp = new Interpreter(groupThatCreatedThisInstance,
 											 locale,
-											 new ErrorManager(listener),
+											 errMgr,
 											 false);
 		InstanceScope scope = new InstanceScope(null, this);
 		return interp.exec(out, scope);
@@ -472,21 +460,35 @@ public class ST {
 			FileOutputStream fos = new FileOutputStream(outputFile);
 			OutputStreamWriter osw = new OutputStreamWriter(fos, encoding);
 			bw = new BufferedWriter(osw);
-			AutoIndentWriter w = new AutoIndentWriter(bw);
-			w.setLineWidth(lineWidth);
-			int n = write(w, locale, listener);
-			bw.close();
-			bw = null;
-			return n;
+			return write(bw, listener, locale, lineWidth);
 		}
 		finally {
 			if (bw != null) bw.close();
 		}
 	}
 
-	public String render() { return render(Locale.getDefault()); }
+    public int write(Writer writer) throws IOException {
+        return write(writer, null, null, STWriter.NO_WRAP);
+    }
 
-    public String render(int lineWidth) { return render(Locale.getDefault(), lineWidth); }
+    /**
+     * @param locale Optional, set to null to use default locale.
+     */
+    public int write(Writer writer, Locale locale, int lineWidth) throws IOException {
+        return write(writer, null, locale, lineWidth);
+    }
+
+    public int write(Writer writer, STErrorListener listener, Locale locale, int lineWidth) throws IOException {
+        AutoIndentWriter w = new AutoIndentWriter(writer);
+        w.setLineWidth(lineWidth);
+        int n = write(w, locale, listener);
+        writer.flush(); // should this be left to the caller in general?
+        return n;
+    }
+
+	public String render() { return render(null, STWriter.NO_WRAP); }
+
+    public String render(int lineWidth) { return render(null, lineWidth); }
 
     public String render(Locale locale) { return render(locale, STWriter.NO_WRAP); }
 
@@ -494,7 +496,7 @@ public class ST {
         StringWriter out = new StringWriter();
         STWriter wr = new AutoIndentWriter(out);
         wr.setLineWidth(lineWidth);
-        write(wr, locale);
+        write(wr, locale, null);
         return out.toString();
     }
 

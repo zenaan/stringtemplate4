@@ -102,21 +102,21 @@ public class Interpreter {
 	protected List<InterpEvent> events;
 
 	public Interpreter(STGroup group, boolean debug) {
-		this(group,Locale.getDefault(),group.errMgr, debug);
+		this(group, null, null, debug);
 	}
 
 	public Interpreter(STGroup group, Locale locale, boolean debug) {
-		this(group, locale, group.errMgr, debug);
+		this(group, locale, null, debug);
 	}
 
 	public Interpreter(STGroup group, ErrorManager errMgr, boolean debug) {
-		this(group,Locale.getDefault(),errMgr, debug);
+		this(group, null, errMgr, debug);
 	}
 
 	public Interpreter(STGroup group, Locale locale, ErrorManager errMgr, boolean debug) {
 		this.group = group;
-		this.locale = locale;
-		this.errMgr = errMgr;
+		this.locale = (locale != null) ? locale : Locale.getDefault();
+		this.errMgr = (errMgr != null) ? errMgr : group.errMgr;
 		this.debug = debug;
 		if ( debug ) {
 			events = new ArrayList<InterpEvent>();
