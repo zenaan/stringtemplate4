@@ -448,6 +448,13 @@ public class ST {
 		return write(outputFile, listener, encoding, Locale.getDefault(), lineWidth);
 	}
 
+    /**
+     * Render this template, writing the result to outputFile.
+     * @param listener Optional, set to null to use default error listener.
+     * @param encoding Optional, set to null to use "UTF-8" encoding.
+     * @param locale Optional, set to null to use default locale.
+     * @return Number of bytes written to outputFile.
+     */
 	public int write(File outputFile,
 					 STErrorListener listener,
 					 String encoding,
@@ -458,6 +465,7 @@ public class ST {
 		Writer bw = null;
 		try {
 			FileOutputStream fos = new FileOutputStream(outputFile);
+			if (encoding == null) encoding = "UTF-8";
 			OutputStreamWriter osw = new OutputStreamWriter(fos, encoding);
 			bw = new BufferedWriter(osw);
 			return write(bw, listener, locale, lineWidth);
@@ -467,17 +475,18 @@ public class ST {
 		}
 	}
 
-    public int write(Writer writer) throws IOException {
-        return write(writer, null, null, STWriter.NO_WRAP);
+    /**
+     * @param listener Optional, set to null to use default error listener.
+     * @param locale Optional, set to null to use default locale.
+     */
+    public int write(Writer writer, STErrorListener listener, Locale locale) throws IOException {
+        return write(writer, listener, locale, STWriter.NO_WRAP);
     }
 
     /**
+     * @param listener Optional, set to null to use default error listener.
      * @param locale Optional, set to null to use default locale.
      */
-    public int write(Writer writer, Locale locale, int lineWidth) throws IOException {
-        return write(writer, null, locale, lineWidth);
-    }
-
     public int write(Writer writer, STErrorListener listener, Locale locale, int lineWidth) throws IOException {
         AutoIndentWriter w = new AutoIndentWriter(writer);
         w.setLineWidth(lineWidth);
