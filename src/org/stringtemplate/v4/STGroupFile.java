@@ -129,6 +129,9 @@ public class STGroupFile extends STGroup {
         return rawGetTemplate(name);
     }
 
+   /**
+    * Not thread safe; must be called from single thread only.
+    */
 	@Override
     public void load() {
         if ( alreadyLoaded ) return;
